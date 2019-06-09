@@ -28,9 +28,6 @@ pro = ts.pro_api(Tushare_TOKEN)
 
 def downloadAllStock():
     """下载所有股票信息"""
-    print('-' * 50)
-    print(u'开始下载股票数据')
-    print('-' * 50)
     stocks = pro.stock_basic(exchange='', list_status='L')
     #选股 条件3 非ST股票
     stocks = stocks[~stocks.name.str.contains('ST')]
@@ -40,23 +37,7 @@ def downloadAllStock():
     cl.delete_many({})
     cl.insert_many(stocks_bson, True) 
     
-    print('-' * 50)
-    print(u'股票数据下载完成')
-    print('-' * 50)
 
-'''
-                                    cl = db[symbol]
-                                    cl.ensure_index([('datetime', ASCENDING)], unique=True)         # 添加索引
-                                    
-                                    df = ts.bar(symbol, freq='1min')
-                                    df = df.sort_index()
-                                    
-                                    for ix, row in df.iterrows():
-                                        bar = generateVtBar(row)
-                                        d = bar.__dict__
-                                        flt = {'datetime': bar.datetime}
-                                        cl.replace_one(flt, d, True)  
-'''
 
 if __name__ == '__main__':
     downloadAllStock()
