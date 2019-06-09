@@ -37,11 +37,8 @@ def downloadAllStock():
     
     cl = db["symbols"]
     stocks_bson = json.loads(stocks.T.to_json()).values()
-    
-    try:
-        cl.insert_many(stocks_bson, True) 
-    except:
-        cl.update_many(stocks_bson, True) 
+    cl.delete_many({})
+    cl.insert_many(stocks_bson, True) 
     
     print('-' * 50)
     print(u'股票数据下载完成')
