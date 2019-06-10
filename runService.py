@@ -27,8 +27,6 @@ if __name__ == '__main__':
                 downloadTradeDataDaily(1)
             # 更新任务完成的日期
             taskCompletedDate = t.date()
-        else:
-            print(u'当前时间%s，任务定时%s' %(t, taskTime))
 
         sleep(60)
         #break

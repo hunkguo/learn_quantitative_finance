@@ -47,8 +47,6 @@ def generateTradeDataDaily(row):
 def downloadTradeDataDaily(days):
     """下载所有日线交易数据"""
     
-    print('-' * 50)
-    print('开始下载日线交易数据')
     cl = db["trade_calenday"]
     # 最近200天交易日
     cals = pd.DataFrame(list(cl.find().sort([('_id', -1)]).limit(days)))
@@ -72,7 +70,6 @@ def downloadTradeDataDaily(days):
             #print(td.trade_date)
             flt = {'trade_date': td.trade_date, 'ts_code': td.ts_code}
             cl_tradedata.replace_one(flt, d, True) 
-    print('-' * 50)
 
 
 
@@ -90,8 +87,6 @@ def generateTradeCalenday(row):
 def downloadTradeCalenday():
     """下载交易日历"""
 
-    print('-' * 50)
-    print(u'开始下载交易日历数据')
     end_date = (datetime.now()).strftime( "%Y%m%d" ) 
     """下载所有交易日历"""
     tadeCalenday = pro.trade_cal(is_open='1', end_date=end_date)
@@ -104,7 +99,6 @@ def downloadTradeCalenday():
         d = tc.__dict__
         flt = {'cal_date': tc.cal_date}
         cl.replace_one(flt, d, True) 
-    print('-' * 50)
 
 
 
@@ -136,8 +130,6 @@ def generateStock(row):
 def downloadAllStock():
     """下载所有股票信息"""
 
-    print('-' * 50)
-    print('开始下载股票数据')
     stocks = pro.stock_basic(exchange='', list_status='L')
     #选股 条件3 非ST股票
     stocks = stocks[~stocks.name.str.contains('ST')]
@@ -149,7 +141,6 @@ def downloadAllStock():
         d = stock.__dict__
         flt = {'ts_code': stock.ts_code}
         cl.replace_one(flt, d, True) 
-    print('-' * 50)
 
 
 
