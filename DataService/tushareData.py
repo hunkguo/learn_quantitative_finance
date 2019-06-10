@@ -54,8 +54,6 @@ def downloadTradeDataDaily(days):
     cals = pd.DataFrame(list(cl.find().sort([('_id', -1)]).limit(days)))
     cals = cals.sort_values(by='cal_date', ascending=True)
 
-    print(cals)
-
 
     cl_tradedata = db["trade_data_daily"]
     cl_tradedata.create_index([('trade_date', ASCENDING), ("ts_code",  ASCENDING)], unique=True)         # 添加索引
