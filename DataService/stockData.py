@@ -71,6 +71,3 @@ def downloadAllStock():
         flt = {'ts_code': stock.ts_code}
         cl.replace_one(flt, d, True) 
 
-
-if __name__ == '__main__':
-    downloadAllStock()
