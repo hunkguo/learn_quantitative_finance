@@ -12,7 +12,7 @@ if __name__ == '__main__':
     taskCompletedDate = None
     
     # 生成一个随机的任务下载时间，用于避免所有用户在同一时间访问数据服务器
-    taskTime = datetime.now().replace(hour=18, minute=0, second=0)
+    taskTime = datetime.now().replace(hour=17, minute=10, second=0)
 
     # 进入主循环
     while True:
@@ -28,6 +28,4 @@ if __name__ == '__main__':
         else:
             print(u'当前时间%s，任务定时%s' %(t, taskTime))
 
-        time.sleep(60)
-
-        break
+        sleep(60)
