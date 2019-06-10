@@ -12,13 +12,13 @@ if __name__ == '__main__':
     taskCompletedDate = None
     
     # 生成一个随机的任务下载时间，用于避免所有用户在同一时间访问数据服务器
-    taskTime = datetime.now().replace(hour=17, minute=10, second=0)
+    taskTime = datetime.now().replace(hour=17, minute=49, second=0)
 
     # 进入主循环
     while True:
         t = datetime.now()
         # 每天到达任务下载时间后，执行数据下载的操作
-        if t.time() > taskTime.time() and (taskCompletedDate is None or t != taskCompletedDate):
+        if t.time() > taskTime.time() and (taskCompletedDate is None or t.date() != taskCompletedDate):
             downloadAllStock()
             downloadTradeCalenday()
             if (taskCompletedDate is None):
@@ -28,5 +28,5 @@ if __name__ == '__main__':
             # 更新任务完成的日期
             taskCompletedDate = t.date()
 
-        sleep(60)
+        sleep(600)
         #break
