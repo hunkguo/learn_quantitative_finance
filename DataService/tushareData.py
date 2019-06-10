@@ -44,14 +44,17 @@ def generateTradeDataDaily(row):
     return tc
 
 
-def downloadTradeDataDaily():
+def downloadTradeDataDaily(days):
     """下载所有日线交易数据"""
     
     print('-' * 50)
     print('开始下载日线交易数据')
     cl = db["trade_calenday"]
     # 最近200天交易日
-    cals = pd.DataFrame(list(cl.find())).tail(30)
+    cals = pd.DataFrame(list(cl.find().sort([('_id', -1)]).limit(days)))
+    cals = cals.sort_values(by='cal_date', ascending=True)
+
+    print(cals)
 
 
     cl_tradedata = db["trade_data_daily"]

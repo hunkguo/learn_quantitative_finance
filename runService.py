@@ -19,13 +19,16 @@ if __name__ == '__main__':
         t = datetime.now()
         # 每天到达任务下载时间后，执行数据下载的操作
         if t.time() > taskTime.time() and (taskCompletedDate is None or t != taskCompletedDate):
-            downloadAllStock()
-            downloadTradeCalenday()
-            downloadTradeDataDaily()
-            
+            #downloadAllStock()
+            #downloadTradeCalenday()
+            if (taskCompletedDate is None):
+                downloadTradeDataDaily(50)
+            else:
+                downloadTradeDataDaily(1)
             # 更新任务完成的日期
             taskCompletedDate = t.date()
         else:
             print(u'当前时间%s，任务定时%s' %(t, taskTime))
 
-        sleep(60)
+        #sleep(60)
+        break
