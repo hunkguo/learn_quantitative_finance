@@ -18,7 +18,7 @@ class BaseData(object):
 
 ########################################################################
 class TsStockData(BaseData):
-    """K线数据"""
+    """股票数据"""
 
     #----------------------------------------------------------------------
     def __init__(self):
@@ -33,3 +33,14 @@ class TsStockData(BaseData):
         self.industry  = ''         # 所属行业
         self.market    = ''         # 市场类型 （主板/中小板/创业板）
         self.list_date = ''         # 上市日期
+
+class TsTradeCalenday(BaseData):
+    """交易日历"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        super(TsTradeCalenday, self).__init__()
+
+        self.exchange      = ''         # 交易所
+        self.cal_date      = ''         # 日历日期
+        self.is_open       = ''         # 是否交易 0休市 1交易

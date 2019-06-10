@@ -31,7 +31,7 @@ pro = ts.pro_api(Tushare_TOKEN)
 
 #----------------------------------------------------------------------
 def generateExchange(symbol):
-    """生成VT合约代码"""
+    """生成交易所代码"""
     if symbol[0:2] in ['60', '51']:
         exchange = 'SSE'
     elif symbol[0:2] in ['00', '15', '30']:
@@ -40,7 +40,7 @@ def generateExchange(symbol):
 
 #----------------------------------------------------------------------
 def generateStock(row):
-    """生成K线"""
+    """生成股票数据"""
     stock = TsStockData()
     stock.ts_code   = row['ts_code']
     stock.symbol    = row['symbol']
@@ -62,9 +62,6 @@ def downloadAllStock():
     
     cl = db["symbols"]
     cl.create_index([('ts_code', ASCENDING)], unique=True)         # 添加索引
-    #stocks_bson = json.loads(stocks.T.to_json()).values()
-    #cl.delete_many({})
-    #cl.insert_many(stocks_bson, True) 
     for row in stocks.iterrows():
         stock = generateStock(row[1])
         d = stock.__dict__
