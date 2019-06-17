@@ -4,6 +4,8 @@ from DataService.tushareData import *
 
 
 if __name__ == '__main__':
+    #downloadTradeCalenday()
     #downloadAllStock()
-    downloadTradeCalenday()
     #downloadTradeDataDaily()
+    # downloadTradeDataTick(10)
+    downloadTradeDataRealtimeQuotes()

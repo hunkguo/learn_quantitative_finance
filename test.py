@@ -9,7 +9,7 @@ import tushare as ts
 
 from pymongo import MongoClient, ASCENDING
 import pandas as pd
-from model.tsObject import tsTradeDataDaily,TsStockData,TsTradeCalenday
+from model.tsObject import tsTradeDataDaily,TsStockData,TsTradeCalenday,tsTradeDataTick,tsTradeDataRealtimeQuotes
 
 # 加载配置
 config = open("config.json")
@@ -25,12 +25,14 @@ db = mc[MONGO_DB]
 
 pro = ts.pro_api(Tushare_TOKEN)
 
+
+
 def test():
     """仅用于测试"""
 
-    df = ts.get_tick_data('600848',date='2018-12-12',src='tt')
-    df.head(10)
-    print(df)
+
+        
+        break
 
 
 if __name__ == '__main__':
