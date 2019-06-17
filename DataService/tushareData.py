@@ -9,7 +9,7 @@ import tushare as ts
 
 from pymongo import MongoClient, ASCENDING
 import pandas as pd
-from model.tsObject import tsTradeDataDaily,TsStockData,TsTradeCalenday,tsTradeDataTick,tsTradeDataRealtimeQuotes
+from model.tsObject import tsTradeDataDaily,TsStockData,TsTradeCalendar,tsTradeDataTick,tsTradeDataRealtimeQuotes
 
 # 加载配置
 config = open("config.json")
@@ -47,7 +47,7 @@ def generateTradeDataDaily(row):
 def downloadTradeDataDaily(days):
     """下载所有日线交易数据"""
     
-    cl = db["trade_calenday"]
+    cl = db["trade_calendar"]
     # 最近200天交易日
     cals = pd.DataFrame(list(cl.find().sort([('_id', -1)]).limit(days)))
     cals = cals.sort_values(by='cal_date', ascending=True)
@@ -75,9 +75,9 @@ def downloadTradeDataDaily(days):
 
 
 #----------------------------------------------------------------------
-def generateTradeCalenday(row):
+def generateTradeCalendar(row):
     """生成交易日历"""
-    tc = TsTradeCalenday()
+    tc = TsTradeCalendar()
     tc.exchange   = row['exchange']
     tc.cal_date   = row['cal_date']
     tc.is_open    = row['is_open']
@@ -85,18 +85,17 @@ def generateTradeCalenday(row):
     return tc
 
 
-def downloadTradeCalenday():
+def downloadTradeCalendar():
     """下载交易日历"""
 
     end_date = (datetime.now()).strftime( "%Y%m%d" ) 
     """下载所有交易日历"""
-    tadeCalenday = pro.trade_cal(is_open='1', end_date=end_date)
-    cl = db["trade_calenday"]
-    #print(tadeCalenday)
+    tadeCalendar = pro.trade_cal(is_open='1', end_date=end_date)
+    cl = db["trade_calendar"]
     cl.create_index([('cal_date', ASCENDING)], unique=True)         # 添加索引
     
-    for row in tadeCalenday.iterrows():
-        tc = generateTradeCalenday(row[1])
+    for row in tadeCalendar.iterrows():
+        tc = generateTradeCalendar(row[1])
         d = tc.__dict__
         flt = {'cal_date': tc.cal_date}
         cl.replace_one(flt, d, True) 
@@ -168,7 +167,7 @@ def generateTradeDataTick(row):
 def downloadTradeDataTick(days):
     """下载历史分笔交易数据"""
     
-    cl = db["trade_calenday"]
+    cl = db["trade_calendar"]
     # 最近200天交易日
     cals = pd.DataFrame(list(cl.find().sort([('_id', -1)]).limit(days)))
     cals = cals.sort_values(by='cal_date', ascending=True)

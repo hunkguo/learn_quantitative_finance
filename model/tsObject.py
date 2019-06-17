@@ -34,12 +34,12 @@ class TsStockData(BaseData):
         self.market    = ''         # 市场类型 （主板/中小板/创业板）
         self.list_date = ''         # 上市日期
 
-class TsTradeCalenday(BaseData):
+class TsTradeCalendar(BaseData):
     """交易日历"""
 
     #----------------------------------------------------------------------
     def __init__(self):
-        super(TsTradeCalenday, self).__init__()
+        super(TsTradeCalendar, self).__init__()
 
         self.exchange      = ''         # 交易所
         self.cal_date      = ''         # 日历日期
