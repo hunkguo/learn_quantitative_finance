@@ -9,7 +9,6 @@ import tushare as ts
 
 from pymongo import MongoClient, ASCENDING
 import pandas as pd
-import easyquotation
 
 # 加载配置
 config = open("config.json")
@@ -22,26 +21,30 @@ MONGO_DB = setting['MONGO_DB']
 mc = MongoClient(MONGO_HOST, MONGO_PORT)        # Mongo连接
 db = mc[MONGO_DB]        
 
-pro = ts.pro_api(Tushare_TOKEN)
 
 
 
 #----------------------------------------------------------------------
 def tickData(d):
-    """下载历史分笔数据"""
     
-    # df = pro.get_tick_data('600848',date=d)
-    # df = pro.get_realtime_quotes('000581')
-    quotation = easyquotation.use('sina') # 新浪 ['sina'] 腾讯 ['tencent', 'qq'] 
-    
-    stocks = pd.DataFrame(list(db["stocks"].find()))
-
+    cl = db["exchange_calendar"]
+    cals = pd.DataFrame(list(cl.find({'isOpen': 1}).sort([('_id', -1)]).limit(100)))
+    cals = cals.sort_values(by='calendarDate', ascending=True)
+    start_date = cals.loc[len(cals)-1]['calendarDate']
+    end_date = cals.loc[0]['calendarDate']
+    print(start_date)
+    print(end_date)
+    cl_stock = db["stocks"]
+    stocks = pd.DataFrame(list(cl_stock.find()))
     for stock in stocks.iterrows():
-        symbol = stock[1]['symbol']
-
-        stock_data_sina = quotation.real(symbol, prefix=True)
-        print(type(stock_data_sina))
+        #print(stock[1]['code'])
+        tradeDataDaily = ts.get_hist_data(stock[1]['code'],start=start_date,end=end_date)
+        # tradeDataDaily['code'] = stock[1]['code']
+        print(len(tradeDataDaily))
         break
 
 if __name__ == '__main__':
-    tickData('2019-6-14')
+    # tickData('2019-6-14')
+    df = ts.get_tick_data('600848',date='2019-06-12',src='tt')
+    #df = ts.get_hist_data('600848')
+    print(df)
