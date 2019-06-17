@@ -134,7 +134,7 @@ def downloadAllStock():
     #选股 条件3 非ST股票
     stocks = stocks[~stocks.name.str.contains('ST')]
     
-    cl = db["symbols"]
+    cl = db["stocks"]
     cl.create_index([('ts_code', ASCENDING)], unique=True)         # 添加索引
     for row in stocks.iterrows():
         stock = generateStock(row[1])
