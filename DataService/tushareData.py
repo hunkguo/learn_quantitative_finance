@@ -135,12 +135,12 @@ def downloadAllStock():
     stocks = stocks[~stocks.name.str.contains('ST')]
     
     cl = db["stocks"]
-    cl.create_index([('ts_code', ASCENDING)], unique=True)         # 添加索引
     for row in stocks.iterrows():
         stock = generateStock(row[1])
         d = stock.__dict__
         flt = {'ts_code': stock.ts_code}
         cl.replace_one(flt, d, True) 
+    cl.create_index([('ts_code', ASCENDING)], unique=True)         # 添加索引
 
 
 
@@ -267,3 +267,5 @@ def downloadTradeDataRealtimeQuotes():
             dd = d.__dict__
             flt = {'time': d.time, 'ts_code': d.ts_code, 'trade_date': d.trade_date}
             cl_trade_data_realtime_quotes.replace_one(flt, dd, True) 
+    
+    cl_trade_data_realtime_quotes.create_index([('trade_date', ASCENDING), ("ts_code",  ASCENDING), ('time', ASCENDING)], unique=True)         # 添加索引

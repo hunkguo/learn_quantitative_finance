@@ -14,7 +14,7 @@ class BaseData(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor""" 
-        self.rawData = None                     # 原始数据
+        # self.rawData = object                     # 原始数据
 
 ########################################################################
 class TsStockData(BaseData):
