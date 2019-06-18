@@ -12,7 +12,7 @@ if __name__ == '__main__':
     taskCompletedDate = None
     
     # 生成一个随机的任务下载时间，用于避免所有用户在同一时间访问数据服务器
-    taskTime = datetime.now().replace(hour=17, minute=49, second=0)
+    taskTime = datetime.now().replace(hour=17, minute=30, second=0)
 
     # 进入主循环
     while True:

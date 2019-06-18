@@ -59,12 +59,10 @@ def downloadTradeDataDaily(days):
     
     for cal in cals.iterrows():
         #print(cal[1])
-        sleep(0.3)
         trade_date = cal[1]['cal_date']
         #print(trade_date)
         tradeData = pro.daily(trade_date=trade_date)
         for row in tradeData.iterrows():
-            sleep(0.2)
             td = generateTradeDataDaily(row[1])
             #print(row[1])
             d = td.__dict__
@@ -178,9 +176,7 @@ def downloadTradeDataTick(days):
     cl_trade_data_tick = db['trade_data_tick']
     #print(stocks)
     for cal in cals.iterrows():
-        sleep(0.1)
         for stock in stocks.iterrows():
-            sleep(0.1)
             date = datetime.strptime(cal[1]['cal_date'], "%Y%m%d").strftime("%Y-%m-%d")
             symbol = stock[1]['symbol']
             tick_data = ts.get_tick_data(symbol,date=date,src='tt')
@@ -254,7 +250,6 @@ def downloadTradeDataRealtimeQuotes():
     cl_trade_data_realtime_quotes = db['trade_data_realtime_quotes']
 
     for stock in stocks.iterrows():
-        sleep(0.1)
         symbol = stock[1]['symbol']
         realtime_quotes_data = ts.get_realtime_quotes(symbol)
         realtime_quotes_data['ts_code'] = stock[1]['ts_code']
@@ -262,7 +257,6 @@ def downloadTradeDataRealtimeQuotes():
         #print(realtime_quotes_data)
 
         for row in realtime_quotes_data.iterrows():
-            sleep(0.1)
             d = generateTradeDataRealtimeQuotes(row[1])
             dd = d.__dict__
             flt = {'time': d.time, 'ts_code': d.ts_code, 'trade_date': d.trade_date}
