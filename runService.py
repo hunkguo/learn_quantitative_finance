@@ -21,12 +21,12 @@ if __name__ == '__main__':
         if t.time() > taskTime.time() and (taskCompletedDate is None or t.date() != taskCompletedDate):
             downloadTradeCalendar()
             downloadAllStock()
-            downloadTradeDataTick(10)
-            downloadTradeDataRealtimeQuotes()
             if (taskCompletedDate is None):
                 downloadTradeDataDaily(20)
             else:
                 downloadTradeDataDaily(1)
+            downloadTradeDataTick(10)
+            downloadTradeDataRealtimeQuotes()
             # 更新任务完成的日期
             taskCompletedDate = t.date()
 
