@@ -2,5 +2,10 @@
 	"MONGO_HOST": "localhost",
     "MONGO_PORT": 27017,
     "MONGO_DB": "QuantDB",
-    "Tushare_TOKEN": "ee53f45bc754c9f7a79c1f5ba5416c6e9dfe15d554ac570a0731233b"
+    "Tushare_TOKEN": "ee53f45bc754c9f7a79c1f5ba5416c6e9dfe15d554ac570a0731233b",
+
+    "SERVER_HOST": "ctyun.listenvideo.club",
+    "SERVER_USER": "root",
+    "SERVER_PORT": 22
+
 }

@@ -22,10 +22,10 @@ if __name__ == '__main__':
             downloadTradeCalendar()
             downloadAllStock()
             if (taskCompletedDate is None):
-                downloadTradeDataDaily(20)
+                downloadTradeDataDaily(5)
             else:
                 downloadTradeDataDaily(1)
-            downloadTradeDataTick(10)
+            downloadTradeDataTick(2)
             downloadTradeDataRealtimeQuotes()
             # 更新任务完成的日期
             taskCompletedDate = t.date()

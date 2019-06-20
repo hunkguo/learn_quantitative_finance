@@ -20,6 +20,12 @@ MONGO_PORT = setting['MONGO_PORT']
 Tushare_TOKEN = setting['Tushare_TOKEN']
 MONGO_DB = setting['MONGO_DB']
 
+
+
+SERVER_HOST = setting['SERVER_HOST']
+SERVER_PORT = setting['SERVER_PORT']
+SERVER_USER = setting['SERVER_USER']
+
 mc = MongoClient(MONGO_HOST, MONGO_PORT)        # Mongo连接
 db = mc[MONGO_DB]        
 
