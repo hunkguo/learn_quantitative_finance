@@ -11,6 +11,8 @@ from pymongo import MongoClient, ASCENDING
 import pandas as pd
 #from sshtunnel import SSHTunnelForwarder
 from model.tsObject import tsTradeDataDaily,TsStockData,TsTradeCalendar,tsTradeDataTick,tsTradeDataRealtimeQuotes
+from tsCommon import *
+from operator import itemgetter
 
 # 加载配置
 config = open("config.json")
@@ -32,102 +34,51 @@ pro = ts.pro_api(Tushare_TOKEN)
 def test():
     """仅用于测试"""     
 
-
-    # define ssh tunnel
-    server = SSHTunnelForwarder(
-        (SERVER_HOST, SERVER_PORT),
-        ssh_username=SERVER_USER,
-        # ssh_password=MONGO_PASS,
-        ssh_pkey="/Users/hunk/zbq.pem",
-        remote_bind_address=(MONGO_HOST, MONGO_PORT)
-    )
-
-
-
-    # start ssh tunnel
-    server.start()
-
-    mc = MongoClient(MONGO_HOST, server.local_bind_port)        # Mongo连接
-    db = mc[MONGO_DB]  
-
-
-    cl_stock = db["stocks"]
-    stocks = pd.DataFrame(list(cl_stock.find()))
-    print(stocks)
-
-    print('_'*50)
-    # close ssh tunnel
-    server.close()
-    
-
-    print('+'*50)
-
-
-'''
-    for stock in stocks.iterrows():
-        symbol = stock[1]['symbol']
-        print(symbol)
-'''    
         
 def test2():
-
-    # 当前日期 待修改，根据时间判断交易日
-    today = datetime.now().strftime('%Y%m%d')
-    # print(today)
-    # tradeCalendar = pro.trade_cal(is_open='1', end_date=today)
-    # tradeCalendar = tradeCalendar.tail(4)
-    # tradeCalendar = tradeCalendar.sort_values(by='cal_date', ascending=True)
-    #print(tradeCalendar)
-
-    # 股票基础数据 取行业
-    stocks_basic_data = pro.stock_basic(exchange='', list_status='L', fields='ts_code,symbol,name,area,industry')
-    # print(stocks[(stocks['ts_code'] == '603997.SH')])
-    # 概念股分类 
-    concept_data = pro.concept(src='ts', fields='name')
-    concept_data['count'] = 0
-    #print(concept_data)
-    
+    trade_date = getTradeDate(1)
+    trade_date_ts = getTradeDate(1, type='ts')
 
 
-    # 概念分类
-    # concept_classified_data = ts.get_concept_classified()
-    # print(concept_classified_data)
-    # 键值不重复，导致数据丢失
-    # concept_classified_data = concept_classified_data.set_index('code')['c_name'].to_dict()
-
-    
-
-    daily_data = pro.daily(trade_date=today, fields='ts_code, pct_chg')
+    # 取涨停股票
+    daily_data = pro.daily(trade_date=trade_date, fields='ts_code, pct_chg, pre_close')
     stocks_limit_up = daily_data[(daily_data['pct_chg'] > 9.0)]
-    #print(len(stocks_limit_up))
+
     for stock in stocks_limit_up.iterrows():
+        sleep(0.5)
         ts_code = stock[1]['ts_code']
-        # symbol = stock[1]['ts_code'].split(".", 1)[0]
-        # print(symbol)
-        # print(concept_classified_data[['code']==symbol])
-        # if (symbol in concept_classified_data and concept_classified_data[symbol] in concept_classified_count):
-        #     concept_classified_count[concept_classified_data[symbol]] += 1
-        # elif(symbol in concept_classified_data):
-        #     concept_classified_count[concept_classified_data[symbol]] = 1
-        stock_concept = pro.concept_detail(ts_code = ts_code, fields='concept_name')
-        for sc in stock_concept.iterrows():
-            sc_name = sc[1]['concept_name']
-            print(type(concept_data[(concept_data['name'] == sc_name)][1]))
-            #concept_data[(concept_data['name'] == sc_name)]= int(concept_data[(concept_data['name'] == sc_name)]) +1
-            #print(concept_data[(concept_data['name'] == sc_name)])
+        #print(stock[1]['ts_code'].split(".", 1)[0])
+        symbol = ts_code.split(".", 1)[0]
+        tick_data = ts.get_tick_data(symbol,date=trade_date_ts,src='tt')
+        tick_data_group = tick_data.groupby(by=['price', 'type'])
+        tick_data_group_sum_volume = tick_data_group['volume'].sum().to_frame() 
+        tick_data_group_sum_amount = tick_data_group['amount'].sum().to_frame() 
 
+        tick_data_calculation = pd.merge(tick_data_group_sum_volume,tick_data_group_sum_amount,left_index=True,right_index=True,how='outer')
 
-
-        break
         
-    # print(concept_classified_count)
+        tick_data_calculation['占比'] = ((tick_data_calculation['volume']/tick_data_calculation['volume'].sum()).round(decimals=2)).map(lambda x: format(x, '.0%'))
 
-    # df = pd.DataFrame.from_dict(concept_classified_count, orient='index', columns=['涨停数量'])
-    # df = pd.DataFrame(list(concept_classified_count.items()), columns=['概念分类', '涨停数量'])
-    # print(df.sort_values(by='涨停数量', ascending=False))
+        # 计算涨停价
+        limit_up_price = round(stock[1]['pre_close'] * 1.1, 2)
+        # 涨停价成交量
+        limit_up_volume = tick_data_calculation.loc[limit_up_price, ['volume']]
+        if(len(limit_up_volume.loc['买盘'])>0):
+            limit_up_volume_buy = (limit_up_volume.loc['买盘'])['volume']
+        if(len(limit_up_volume.loc['卖盘'])>0):
+            limit_up_volume_sell = (limit_up_volume.loc['卖盘'])['volume']
 
-    
+        #print(type(stock['limit_up_price']))
+        # 板上成交额
+        stocks_limit_up.loc[stocks_limit_up.ts_code == ts_code,"limit_up_amount"] = (limit_up_price * (limit_up_volume_buy + limit_up_volume_buy))
+        # 板上内外比  买盘/卖盘
+        stocks_limit_up.loc[stocks_limit_up.ts_code == ts_code,"limit_up_volume_per"] = round(limit_up_volume_buy/limit_up_volume_sell, 2)
+        # 达到涨停价时间
+        stocks_limit_up.loc[stocks_limit_up.ts_code == ts_code,"limit_up_time"] = list((tick_data[(tick_data['price']==limit_up_price)]).head(1).loc[:, 'time'])[0]
+        #print(stocks_limit_up.loc[stocks_limit_up.ts_code == ts_code])
 
+    print(stocks_limit_up)
+    stocks_limit_up.to_csv('Result.csv')
         
 
 
@@ -137,46 +88,41 @@ if __name__ == '__main__':
 
 
 
-# 分价表
-# -----------------------------------------------------------------------------------------
-'''
-    tick_data = ts.get_tick_data('300362',date='2019-06-20',src='tt')
-    tick_data_group = tick_data.groupby(['price', 'type'])
-    tick_data_group_sum_volume = tick_data_group['volume'].sum().to_frame() 
-    tick_data_group_sum_amount = tick_data_group['amount'].sum().to_frame() 
+'''取涨停股票的概念分类和行业，完成
 
-    df = pd.merge(tick_data_group_sum_volume,tick_data_group_sum_amount,left_index=True,right_index=True,how='outer')
-    df['占比'] = ((df['volume']/df['volume'].sum()).round(decimals=2)).map(lambda x: format(x, '.0%'))
-    print(df)
+    # 股票基础数据 取行业
+    stocks_basic_data = pro.stock_basic(exchange='', list_status='L', fields='ts_code, industry')
+    # print(stocks[(stocks['ts_code'] == '603997.SH')])
+    # 概念股分类 
+    concept_data = pro.concept(src='ts', fields='name')
+    # 初始化 概念分类 字典
+    concept_data_dict = dict()
+    stock_basic_data_1 = pd.DataFrame(columns = ["ts_code", "industry"])
+    for concept in concept_data.iterrows():
+        concept_name = concept[1]['name']
+        concept_data_dict[concept_name] = 0
 
+    trade_date = getTradeDate(1)
 
-
-
-
-
-    today = datetime.now().strftime('%Y%m%d')
-    #print(today)
-
-    daily_data = pro.daily(trade_date='20190619')
+    daily_data = pro.daily(trade_date=trade_date, fields='ts_code, pct_chg')
     stocks_limit_up = daily_data[(daily_data['pct_chg'] > 9.0)]
-    #print(stocks_limit_up)
-    for stock in stocks_limit_up.iterrows():
-        #print(stock[1]['ts_code'].split(".", 1)[0])
-        symbol = stock[1]['ts_code'].split(".", 1)[0]
-        tick_data = ts.get_tick_data(symbol,date='2018-12-12',src='tt')
-        tick_data_group = tick_data.groupby(by=['price'])
-        tick_data_group_sum_volume = tick_data_group['volume'].sum().to_frame() 
-        tick_data_group_sum_amount = tick_data_group['amount'].sum().to_frame() 
 
-        df = pd.merge(tick_data_group_sum_volume,tick_data_group_sum_amount,left_index=True,right_index=True,how='outer')
-        print(df)
-        break
+    for index,stock in stocks_limit_up.iterrows():
+        sleep(0.5)
+        ts_code = stock['ts_code']
+        stock_concept = pro.concept_detail(ts_code = ts_code, fields='concept_name')
+        for sc in stock_concept.iterrows():
+            sc_name = sc[1]['concept_name']
+            concept_data_dict[sc_name] += 1
+        
+        stock_basic_code = stocks_basic_data[(stocks_basic_data['ts_code']==ts_code)]
+        stock_basic_data_1 = stock_basic_data_1.append(stock_basic_code)
+        if(index > 100):
+            break
 
+    #sorted_dict = sorted(concept_data_dict.items(), key=lambda item: item[1], reverse=True)
+    concept_df = pd.DataFrame(list(concept_data_dict.items()), columns=['concept_name', 'count'])
 
-# 概念分类 字典
-# -----------------------------------------------------------------------------------------
-
-    df = ts.get_concept_classified()
-    dict_country = df.set_index('code')['c_name'].to_dict()
-    print(dict_country['002633'])
+    print(concept_df[(concept_df['count']>0)])
+    print(stock_basic_data_1)
 '''
