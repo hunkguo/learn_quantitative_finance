@@ -9,7 +9,7 @@ import tushare as ts
 from collections import Counter
 from pymongo import MongoClient, ASCENDING
 import pandas as pd
-from sshtunnel import SSHTunnelForwarder
+#from sshtunnel import SSHTunnelForwarder
 from model.tsObject import tsTradeDataDaily,TsStockData,TsTradeCalendar,tsTradeDataTick,tsTradeDataRealtimeQuotes
 
 # 加载配置
@@ -74,42 +74,57 @@ def test2():
     # 当前日期 待修改，根据时间判断交易日
     today = datetime.now().strftime('%Y%m%d')
     # print(today)
-    tradeCalendar = pro.trade_cal(is_open='1', end_date=today)
-    tradeCalendar = tradeCalendar.tail(4)
-    tradeCalendar = tradeCalendar.sort_values(by='cal_date', ascending=True)
-    print(tradeCalendar)
+    # tradeCalendar = pro.trade_cal(is_open='1', end_date=today)
+    # tradeCalendar = tradeCalendar.tail(4)
+    # tradeCalendar = tradeCalendar.sort_values(by='cal_date', ascending=True)
+    #print(tradeCalendar)
 
-
-
+    # 股票基础数据 取行业
+    stocks_basic_data = pro.stock_basic(exchange='', list_status='L', fields='ts_code,symbol,name,area,industry')
+    # print(stocks[(stocks['ts_code'] == '603997.SH')])
+    # 概念股分类 
+    concept_data = pro.concept(src='ts', fields='name')
+    concept_data['count'] = 0
+    #print(concept_data)
+    
 
 
     # 概念分类
-    concept_classified_data = ts.get_concept_classified()
-    concept_classified_data = concept_classified_data.set_index('code')['c_name'].to_dict()
+    # concept_classified_data = ts.get_concept_classified()
+    # print(concept_classified_data)
+    # 键值不重复，导致数据丢失
+    # concept_classified_data = concept_classified_data.set_index('code')['c_name'].to_dict()
 
-    # concept_classified_count = Counter()
-    concept_classified_count = {}
+    
 
-    daily_data = pro.daily(trade_date=today)
+    daily_data = pro.daily(trade_date=today, fields='ts_code, pct_chg')
     stocks_limit_up = daily_data[(daily_data['pct_chg'] > 9.0)]
-    #print(stocks_limit_up)
+    #print(len(stocks_limit_up))
     for stock in stocks_limit_up.iterrows():
-        #print(stock[1]['ts_code'].split(".", 1)[0])
-        symbol = stock[1]['ts_code'].split(".", 1)[0]
-        # concept_classified_count.update(str(concept_classified_data[symbol])
+        ts_code = stock[1]['ts_code']
+        # symbol = stock[1]['ts_code'].split(".", 1)[0]
+        # print(symbol)
+        # print(concept_classified_data[['code']==symbol])
+        # if (symbol in concept_classified_data and concept_classified_data[symbol] in concept_classified_count):
+        #     concept_classified_count[concept_classified_data[symbol]] += 1
+        # elif(symbol in concept_classified_data):
+        #     concept_classified_count[concept_classified_data[symbol]] = 1
+        stock_concept = pro.concept_detail(ts_code = ts_code, fields='concept_name')
+        for sc in stock_concept.iterrows():
+            sc_name = sc[1]['concept_name']
+            print(type(concept_data[(concept_data['name'] == sc_name)][1]))
+            #concept_data[(concept_data['name'] == sc_name)]= int(concept_data[(concept_data['name'] == sc_name)]) +1
+            #print(concept_data[(concept_data['name'] == sc_name)])
 
-#        if (concept_classified_count(concept_classified_data[symbol]) == 0):
-#           concept_classified_count.update(concept_classified_data[symbol])
-        if (symbol in concept_classified_data and concept_classified_data[symbol] in concept_classified_count):
-            concept_classified_count[concept_classified_data[symbol]] += 1
-        elif(symbol in concept_classified_data):
-            concept_classified_count[concept_classified_data[symbol]] = 1
+
+
+        break
         
     # print(concept_classified_count)
 
     # df = pd.DataFrame.from_dict(concept_classified_count, orient='index', columns=['涨停数量'])
-    df = pd.DataFrame(list(concept_classified_count.items()), columns=['概念分类', '涨停数量'])
-    print(df.sort_values(by='涨停数量', ascending=False))
+    # df = pd.DataFrame(list(concept_classified_count.items()), columns=['概念分类', '涨停数量'])
+    # print(df.sort_values(by='涨停数量', ascending=False))
 
     
 
