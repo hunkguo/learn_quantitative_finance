@@ -63,22 +63,28 @@ def test2():
         limit_up_price = round(stock[1]['pre_close'] * 1.1, 2)
         # 涨停价成交量
         limit_up_volume = tick_data_calculation.loc[limit_up_price, ['volume']]
-        if(len(limit_up_volume.loc['买盘'])>0):
+        try:
             limit_up_volume_buy = (limit_up_volume.loc['买盘'])['volume']
-        if(len(limit_up_volume.loc['卖盘'])>0):
+        except:
+            limit_up_volume_buy = 0 
+        try:    
             limit_up_volume_sell = (limit_up_volume.loc['卖盘'])['volume']
-
+        except:
+            limit_up_volume_sell = 0
         #print(type(stock['limit_up_price']))
         # 板上成交额
         stocks_limit_up.loc[stocks_limit_up.ts_code == ts_code,"limit_up_amount"] = (limit_up_price * (limit_up_volume_buy + limit_up_volume_buy))
         # 板上内外比  买盘/卖盘
         stocks_limit_up.loc[stocks_limit_up.ts_code == ts_code,"limit_up_volume_per"] = round(limit_up_volume_buy/limit_up_volume_sell, 2)
         # 达到涨停价时间
-        stocks_limit_up.loc[stocks_limit_up.ts_code == ts_code,"limit_up_time"] = list((tick_data[(tick_data['price']==limit_up_price)]).head(1).loc[:, 'time'])[0]
+        stocks_limit_up.loc[stocks_limit_up.ts_code == ts_code,"limit_up_time"] =  (tick_data[(tick_data['price']==limit_up_price)]).iat[0,0]
         #print(stocks_limit_up.loc[stocks_limit_up.ts_code == ts_code])
+        #sss = (tick_data[(tick_data['price']==limit_up_price)]).iat[0,0]
+        #print(type(sss))
+        #print(sss)
 
     print(stocks_limit_up)
-    stocks_limit_up.to_csv('Result.csv')
+#    stocks_limit_up.to_csv('Result.csv')
         
 
 
